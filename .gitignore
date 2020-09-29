@@ -1,6 +1,9 @@
 # environmental variables
 .flaskenv
 
+# database
+*.db
+
 *.pyc
 __pycache__/
 
