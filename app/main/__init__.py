@@ -1,19 +1,25 @@
+# import default modules
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager
 
+# import config_by_name for configuration environment
 from .config import config_by_name
 
-# initialize SQLAlchemy object for model and resource access
+
+# create objects of database, bcrypt, jwt_manager
 db = SQLAlchemy()
 bcrypt = Bcrypt()
 jwt_manager = JWTManager()
 
+
+# import user model after db to resolve looping
 from app.main.model.user import User
 
+
+# create_app with environment
 def create_app(env):
-    """ create app with configuration by the 'env' name given as argument from config.py file """
 
     # create app
     app = Flask(__name__)
@@ -21,7 +27,7 @@ def create_app(env):
     # configure app with config_by_name[environment]
     app.config.from_object(config_by_name[env])
 
-    # initialize database with app
+    # initialize database, bcrypt, jwt_manager with app
     db.init_app(app)
     bcrypt.init_app(app)
     jwt_manager.init_app(app)

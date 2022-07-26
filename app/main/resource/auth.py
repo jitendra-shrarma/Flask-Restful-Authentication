@@ -12,11 +12,16 @@ from flask_jwt_extended import (
     unset_jwt_cookies,
 )
 
-# import custom modules
+# import db, jwt_manager for database operations and authentication
 from app.main import db, jwt_manager
+
+# user model to create and access user data in database
 from app.main.model.user import User
 
 
+# registration resouce with post method
+# create user passed credentials(email, password)
+# parse credentials, to make login successful
 class RegistrationResource(Resource):
     def __init__(self):
         # parser to parse_args, required arguments are email and password
@@ -38,10 +43,12 @@ class RegistrationResource(Resource):
         )
 
     def saveChanges(self, user):
+        # save user object in database
         db.session.add(user)
         db.session.commit()
 
     def post(self):
+        # get user information, credentials(email, password) are mandatory
         args = self.parser.parse_args()
         first_name = args["first_name"]
         last_name = args["last_name"]
@@ -54,32 +61,41 @@ class RegistrationResource(Resource):
 
         # if user found, return status
         if user:
-            return make_response(jsonify({"status": False, "message": "user exists with this email"}), 400)
+            return make_response(
+                jsonify({"status": False, "message": "user exists with this email"}),
+                400,
+            )
 
         # username is not provided
         if not username:
             username = first_name or "user"
             username += last_name or str(User.query.count())
-
         else:
             # check if there is a user with this username already
             user = User.query.filter_by(username=username).first()
 
             # if user found, return status
             if user:
-                return make_response(jsonify({'status': False, 'message': f'user exists with this {username}'}),400)
+                return make_response(
+                    jsonify(
+                        {
+                            "status": False,
+                            "message": f"user exists with this {username}",
+                        }
+                    ),
+                    400,
+                )
 
         # create user with given arguments
         user = User(
-            first_name=first_name,
-            last_name=last_name,
-            username=username,
-            email=email,
+            first_name=first_name, last_name=last_name, username=username, email=email,
         )
         user.set_password(password)
         self.saveChanges(user)
         # return response, with username
-        return make_response(jsonify({'status': True, 'message': f'{username} added successfully'}), 201)
+        return make_response(
+            jsonify({"status": True, "message": f"{username} added successfully"}), 201
+        )
 
 
 # login resouce with post method
